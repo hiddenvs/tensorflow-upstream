@@ -23,6 +23,7 @@ package_group(
     name = "friends",
     includes = ["//third_party/mlir:subpackages"],
     packages = [
+        "//learning/brain/experimental/mlir/tflite/tfmrt/...",
         "//learning/brain/mlir/...",
         "//tensorflow/compiler/mlir/...",
         "//third_party/iree/...",
@@ -237,6 +238,7 @@ cc_library(
     deps = [
         ":tensorflow_lite_ops_inc_gen",
         "//tensorflow/compiler/mlir/lite/quantization:quantization_lib",
+        "//tensorflow/compiler/mlir/tensorflow",
         "//tensorflow/compiler/mlir/tensorflow:tensorflow_types",
         "//tensorflow/lite/schema:schema_fbs",
         "//third_party/eigen3",

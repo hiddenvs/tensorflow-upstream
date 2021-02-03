@@ -93,22 +93,13 @@ struct ComputeTaskDescriptor {
                     const TensorDescriptor& desc);
 
   absl::Status AddTask(ComputeTaskDescriptor* task_desc);
+  absl::Status AddOperation(GPUOperation* operation);
   void AssembleCode();
 
  private:
   friend class ComputeTask;
   int linkable_count = 0;        // temporary, used during op construction
   std::string elementwise_code;  // temporary, used during op construction
-};
-
-using ComputeTaskDescriptorPtr = std::shared_ptr<ComputeTaskDescriptor>;
-
-struct NodeDescriptor {
-  ComputeTaskDescriptorPtr task;
-  int id;
-  std::string description;
-  std::vector<ValueId> src_tensors_ids;
-  std::vector<ValueId> dst_tensors_ids;
 };
 
 /// Helper function to convert buffer's content into stream of bytes

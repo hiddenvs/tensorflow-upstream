@@ -161,6 +161,14 @@ foreach fromToBinPair = [[TF_DivNoNanOp, TF_DivOp],
   def : BinaryNoNanPat<fromToBinPair[0], fromToBinPair[1]>;
 
 //===----------------------------------------------------------------------===//
+// Expm1 op patterns.
+//===----------------------------------------------------------------------===//
+
+def LowerExpm1Op : Pat<(TF_Expm1Op $x),
+                       (TF_SubOp (TF_ExpOp $x),
+                        (TF_ConstOp (GetScalarOfType<1> $x)))>;
+
+//===----------------------------------------------------------------------===//
 // Fill op patterns.
 //===----------------------------------------------------------------------===//
 
@@ -233,11 +241,15 @@ def LowerReciprocal : Pat<(TF_ReciprocalOp $x),
 // Round op patterns.
 //===----------------------------------------------------------------------===//
 
+// Rint is specified as RoundHalfToEven, which happens to be the same behavior
+// as TF_RoundOp, so lower to TF_RoundOp.
+def : Pat<(TF_RintOp:$res TF_FloatTensor:$input), (TF_RoundOp $input)>;
 
 // Rounds on integers should just be bypassed.
 def : Pat<(TF_RoundOp:$res TF_IntTensor:$input), (TF_IdentityOp $input)>;
 
-// Implements TF Round on floats using basic operations.
+// Implements TF Round on floats using basic operations. TF Round is specified
+// as RoundHalfToEven to be compatible with Numpy.
 def : Pat<(TF_RoundOp:$res TF_FloatTensor:$input),
           (TF_SelectOp
            (TF_LessOp

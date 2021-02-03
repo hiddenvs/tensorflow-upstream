@@ -33,11 +33,10 @@ namespace metal {
 namespace {
 std::string GetElementWiseCode(const OperationDef& op_def) {
   return R"(
-kernel void ComputeFunction($0
-                            uint3 gid[[thread_position_in_grid]]) {
-  int X = static_cast<int>(gid.x);
-  int Y = static_cast<int>(gid.y);
-  int Z = static_cast<int>(gid.z);
+MAIN_FUNCTION($0) {
+  int X = GLOBAL_ID_0;
+  int Y = GLOBAL_ID_1;
+  int Z = GLOBAL_ID_2;
   if (X >= args.dst_tensor.Width() || Y >= args.dst_tensor.Height() || Z >= args.dst_tensor.Slices()) {
     return;
   }
@@ -109,6 +108,25 @@ absl::Status ComputeTaskDescriptor::AddTask(ComputeTaskDescriptor* task_desc) {
   }
   for (int i = 0; i < task_desc->dst_tensors_names.size(); ++i) {
     dst_tensors_names.push_back(task_desc->dst_tensors_names[i] +
+                                unique_postfix);
+  }
+  return absl::OkStatus();
+}
+
+absl::Status ComputeTaskDescriptor::AddOperation(GPUOperation* operation) {
+  linkable_count += 1;
+  std::string code = operation->code_;
+  std::string unique_postfix = absl::StrCat("_link", linkable_count);
+  operation->args_.RenameArgs(unique_postfix, &code);
+  elementwise_code += "{\n" + code + "\n}\n";
+  RETURN_IF_ERROR(args.Merge(std::move(operation->args_), unique_postfix));
+  for (int i = 0; i < operation->src_tensors_names_.size(); ++i) {
+    definition.src_tensors.push_back(operation->definition_.src_tensors[i + 1]);
+    src_tensors_names.push_back(operation->src_tensors_names_[i] +
+                                unique_postfix);
+  }
+  for (int i = 0; i < operation->dst_tensors_names_.size(); ++i) {
+    dst_tensors_names.push_back(operation->dst_tensors_names_[i] +
                                 unique_postfix);
   }
   return absl::OkStatus();
