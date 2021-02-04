@@ -45,16 +45,11 @@ namespace tensorflow {
 namespace grappler {
 
 #if TENSORFLOW_USE_ROCM
-#if TF_ROCM_VERSION < 30900
-const std::array<std::string, 2> FP16SupportedDevices = {"906", "908"}; 
-#else
 const std::array<std::string, 2> FP16SupportedDevices = {"gfx906", "gfx908"}; 
-#endif // ROCM_VERSION < 30900 
 
-bool HasEnhancedFP16ComputeSupport(std::pair<int, int> gpu_arch){
-    std::string arch = std::to_string(gpu_arch.first); 
+bool HasEnhancedFP16ComputeSupport(std::string gpu_arch){
     return std::find(std::begin(FP16SupportedDevices), 
-                     std::end(FP16SupportedDevices), arch)
+                     std::end(FP16SupportedDevices), gpu_arch)
            != std::end(FP16SupportedDevices); 
 }
 #endif
@@ -1182,7 +1177,10 @@ bool AutoMixedPrecisionImpl::IsOnSuitableGPUArch(const NodeDef& node) const {
 #ifndef TENSORFLOW_USE_ROCM
   return GetDeviceGPUArch(virtual_placer_.get_device(node)) >= kMinGPUArch;
 #else
-  return HasEnhancedFP16ComputeSupport(GetDeviceGPUArch(virtual_placer_.get_device(node)));
+  DeviceProperties device_prop = virtual_placer_.get_device(node); 
+  if (device_prop.type() != "GPU") return false; 
+  string arch_str = device_prop.environment().at("architecture"); 
+  return HasEnhancedFP16ComputeSupport(arch_str);
 #endif
 }
 
