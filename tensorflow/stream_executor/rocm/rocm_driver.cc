@@ -1087,9 +1087,6 @@ GpuDriver::ContextGetSharedMemConfig(GpuContext* context) {
   if (result == hipSuccess) {
     *gcnArchName = props.gcnArchName;
     return port::Status::OK();
-    //TODO REMOVE! 
-    std::cout<<"*************** Device arch =  "<<props.gcnArchName<<std::endl;
-    std::cin.get();
   }
   *gcnArchName = "";
   return port::Status{
