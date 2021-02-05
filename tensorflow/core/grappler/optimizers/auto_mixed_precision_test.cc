@@ -117,7 +117,7 @@ class AutoMixedPrecisionTest : public GrapplerTest {
       device_properties.mutable_environment()->insert({"architecture", "7"});
       device_properties.mutable_environment()->insert({"cuda", "9010"});
 #elif TENSORFLOW_USE_ROCM
-      device_properties.mutable_environment()->insert({"architecture", "906"});
+      device_properties.mutable_environment()->insert({"architecture", "gfx906"});
 #endif
       virtual_cluster_.reset(
           new VirtualCluster({{"/GPU:1", device_properties}}));
@@ -1042,35 +1042,17 @@ int GetCudaVersion(const Cluster& cluster) {
   return 0;
 }
 
-std::pair<int, int> GetMinDeviceGPUArch(const Cluster& cluster){
+std::string GetMinDeviceGPUArch(const Cluster& cluster){
     auto devices = cluster.GetDevices();
-    int major, minor;
-    int mmajor;
+    std::string arch; 
     for (const auto& device: devices){
         const DeviceProperties& device_properties = device.second; 
-        if (device_properties.type() != "GPU") return {0, 0};
+        if (device_properties.type() != "GPU") return "0";
         string arch_str = device_properties.environment().at("architecture");
-        std::vector<string> split_arch_str = str_util::Split(arch_str, '.');
-        if (split_arch_str.empty()) {
-            return {0, 0};
-        }
-        strings::safe_strto32(split_arch_str[0], &mmajor);  
-        if (!strings::safe_strto32(split_arch_str[0], &major)) {
-            return {0, 0};
-        } 
-
-        if (split_arch_str.size() > 1) {
-            if (strings::safe_strto32(split_arch_str[1], &minor)) {
-                mmajor = (mmajor <= major) ?  mmajor: major; 
-            } else { 
-                return {0, 0};
-            } 
-        } else {
-                minor = 0; 
-                mmajor = (mmajor <= major) ?  mmajor: major; 
-        } 
+        if(!HasEnhancedFP16ComputeSupport(arch_str)) return "0";
+        arch = arch_str; 
     }
-    return {mmajor, minor}; 
+    return arch;
 }
 
 TEST_F(AutoMixedPrecisionTest, BatchMatMul) {
@@ -1096,7 +1078,7 @@ TEST_F(AutoMixedPrecisionTest, BatchMatMul) {
   if (GetCudaVersion(*virtual_cluster_.get()) >= 9010) {
 #elif TENSORFLOW_USE_ROCM
   if (HasEnhancedFP16ComputeSupport(GetMinDeviceGPUArch(*virtual_cluster_.get()))){
-#else  // TENSORFLOW_USE_ROCM
+#else  
   if (true) {
 #endif
     EXPECT_EQ(output.node_size(), item.graph.node_size() + 2);
