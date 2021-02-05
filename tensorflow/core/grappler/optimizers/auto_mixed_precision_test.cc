@@ -86,16 +86,14 @@ void VerifyGraphsEquivalent(const GraphDef& original_graph,
   }
 }
 
-// Currently, this test suite only passes when TensorFlow passes with CUDA,
+// Currently, this test suite only passes when TensorFlow passes with CUDA or HIP,
 // because otherwise the optimizer will not turn clearlist nodes to float16.
 // When looking at clearlist nodes, this optimizer checks if the nodes have a
-// float16 GPU OpKernel, but without CUDA there are no GPU OpKernels at all.
+// float16 GPU OpKernel, but without CUDA or HIP there are no GPU OpKernels at all.
 #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
 #if GOOGLE_CUDA
 const std::pair<int, int> kMinGPUArch = {7, 0};
-#elif TENSORFLOW_USE_ROCM
-const std::pair<int, int> kMinGPUArch = {906,0};
 #endif
 
 class AutoMixedPrecisionTest : public GrapplerTest {
@@ -104,7 +102,7 @@ class AutoMixedPrecisionTest : public GrapplerTest {
     int num_gpus = GetNumAvailableGPUs();
     // If GPUs are available, require that they all satisfy the min arch.
     gpu_available_ = (num_gpus > 0);
-#if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
+#if GOOGLE_CUDA 
     gpu_available_ =
         gpu_available_ && (num_gpus == GetNumAvailableGPUs(kMinGPUArch));
 #endif

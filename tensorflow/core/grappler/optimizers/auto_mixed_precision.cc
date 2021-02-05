@@ -58,8 +58,6 @@ namespace {
 
 #if GOOGLE_CUDA
 const std::pair<int, int> kMinGPUArch = {7, 0};
-#elif TENSORFLOW_USE_ROCM
-const std::pair<int, int> kMinGPUArch = {906,0}; 
 #else
 const std::pair<int, int> kMinGPUArch = {0, 0};
 #endif
@@ -1991,10 +1989,15 @@ int GetNumGPUs(const Cluster& cluster,
   int num_gpus = 0;
   for (const auto& device : devices) {
     const DeviceProperties& device_properties = device.second;
+#if GOOGLE_CUDA
     std::pair<int, int> arch = GetDeviceGPUArch(device_properties);
     if (device_properties.type() == "GPU" && arch >= min_arch) {
       num_gpus++;
     }
+#elif TENSORFLOW_USE_ROCM
+    std::string gpu_arch = device_properties.environment().at("architecture");
+    if (HasEnhancedFP16ComputeSupport(gpu_arch) num_gpus++;
+#endif
   }
   return num_gpus;
 }
