@@ -1996,7 +1996,7 @@ int GetNumGPUs(const Cluster& cluster,
     }
 #elif TENSORFLOW_USE_ROCM
     std::string gpu_arch = device_properties.environment().at("architecture");
-    if (HasEnhancedFP16ComputeSupport(gpu_arch) num_gpus++;
+    if (HasEnhancedFP16ComputeSupport(gpu_arch)) num_gpus++;
 #endif
   }
   return num_gpus;
