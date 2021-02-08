@@ -41,6 +41,10 @@ limitations under the License.
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/util/env_var.h"
 
+#if TENSORFLOW_USE_ROCM
+#include "rocm/include/hip/hip_runtime.h"
+#endif
+
 namespace tensorflow {
 namespace grappler {
 
