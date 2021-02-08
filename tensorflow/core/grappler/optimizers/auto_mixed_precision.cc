@@ -55,7 +55,7 @@ bool GetFastFP16Support()
     hipDeviceProp_t props;
     int dev = 0;
     hipError_t result = hipGetDevice(&dev);
-    result = tensorflow::wrap::hipGetDeviceProperties(&props, dev);
+    result = hipGetDeviceProperties(&props, dev);
     std::string gcnArchName = props.gcnArchName;
 #if TF_ROCM_VERSION >= 4000
     std::string gpu_arch = absl::StrSplit(gcnArchName, ":")[0];
