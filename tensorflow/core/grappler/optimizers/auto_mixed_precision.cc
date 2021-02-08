@@ -1165,7 +1165,6 @@ bool AutoMixedPrecisionImpl::IsOnSuitableGPUArch(const NodeDef& node) const {
 #ifndef TENSORFLOW_USE_ROCM
   return GetDeviceGPUArch(virtual_placer_.get_device(node)) >= kMinGPUArch;
 #else
-  if (device_prop.type() != "GPU") return false; 
   bool supported;
   auto status GpuDriver::GetFastFP16Support(supported); 
   return supported; 
