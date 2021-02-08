@@ -1065,9 +1065,7 @@ TEST_F(AutoMixedPrecisionTest, BatchMatMul) {
 #if GOOGLE_CUDA
   if (GetCudaVersion(*virtual_cluster_.get()) >= 9010) {
 #elif TENSORFLOW_USE_ROCM
-  bool support; 
-  auto status = gpu::GpuDriver::GetFastFP16Support(support); 
-  if (support){
+  if (GetFastFP16Support()){
 #else  
   if (true) {
 #endif

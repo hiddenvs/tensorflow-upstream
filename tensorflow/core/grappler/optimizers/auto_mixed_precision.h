@@ -22,6 +22,10 @@ limitations under the License.
 namespace tensorflow {
 namespace grappler {
 
+#if TENSORFLOW_USE_ROCM
+    bool GetFastFP16Support(); 
+#endif 
+
 enum class AutoMixedPrecisionMode { CUDA, MKL };
 
 // Convert data types to float16 or bfloat16 where appropriate to improve
