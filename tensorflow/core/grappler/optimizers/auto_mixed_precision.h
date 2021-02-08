@@ -18,7 +18,7 @@ limitations under the License.
 
 #include "tensorflow/core/grappler/optimizers/graph_optimizer.h"
 #include "tensorflow/core/protobuf/rewriter_config.pb.h"
-#include "tensorlfow/stream_executor/gpu/gpu_driver.h"
+#include "tensorflow/stream_executor/gpu/gpu_driver.h"
 
 namespace tensorflow {
 namespace grappler {
