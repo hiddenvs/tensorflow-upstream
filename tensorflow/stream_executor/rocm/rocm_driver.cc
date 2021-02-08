@@ -1095,6 +1095,33 @@ GpuDriver::ContextGetSharedMemConfig(GpuContext* context) {
                       device)};
 }
 
+/* static */ port::Status GpuDriver::GetFastFP16Support(bool& supported)
+{
+    supported = false;
+    std::array<std::string, 2> FP16SupportedDevices = {"gfx906, gfx908"};
+    hipDeviceProp_t props; 
+    int dev = 0; 
+    hipError_t result = hipGetDevice(&dev); 
+    result = tensorflow::wrap::hipGetDeviceProperties(&props, dev);
+    if (result == hipSuccess) {
+        std::string gcnArchName = props.gcnArchName; 
+        VLOG(1)<<"GCN Arch Name " << gcnArchName;
+#if TF_ROCM_VERSION >= 4000
+        std::string gpu_arch = absl::StrSplit(gcnArchName, ":")[0]; 
+#else
+        std::string gpu_arch = gcnArchName; 
+#endif
+        supported = std::find(std::begin(FP16SupportedDevices),
+                    std::end(FP16SupportedDevices), gpu_arch)
+                    != std::end(FP16SupportedDevices);
+        return port::Status::OK(); 
+    } 
+    return port::Status{
+           port::error::INTERNAL, 
+           absl::StrFormat("Failed to determine AMDGpu GCN Arch Name for device %d",
+           dev)};
+}
+
 // Helper function that turns the integer output of hipDeviceGetAttribute to
 // type T and wraps it in a StatusOr.
 template <typename T>

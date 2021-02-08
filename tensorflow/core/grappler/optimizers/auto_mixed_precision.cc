@@ -44,16 +44,6 @@ limitations under the License.
 namespace tensorflow {
 namespace grappler {
 
-#if TENSORFLOW_USE_ROCM
-const std::array<std::string, 2> FP16SupportedDevices = {"gfx906", "gfx908"}; 
-
-bool HasEnhancedFP16ComputeSupport(std::string gpu_arch){
-    return std::find(std::begin(FP16SupportedDevices), 
-                     std::end(FP16SupportedDevices), gpu_arch)
-           != std::end(FP16SupportedDevices); 
-}
-#endif
-
 namespace {
 
 #if GOOGLE_CUDA
@@ -1175,10 +1165,10 @@ bool AutoMixedPrecisionImpl::IsOnSuitableGPUArch(const NodeDef& node) const {
 #ifndef TENSORFLOW_USE_ROCM
   return GetDeviceGPUArch(virtual_placer_.get_device(node)) >= kMinGPUArch;
 #else
-  DeviceProperties device_prop = virtual_placer_.get_device(node); 
   if (device_prop.type() != "GPU") return false; 
-  string arch_str = device_prop.environment().at("architecture"); 
-  return HasEnhancedFP16ComputeSupport(arch_str);
+  bool supported;
+  auto status GpuDriver::GetFastFP16Support(supported); 
+  return supported; 
 #endif
 }
 
@@ -1995,8 +1985,9 @@ int GetNumGPUs(const Cluster& cluster,
       num_gpus++;
     }
 #elif TENSORFLOW_USE_ROCM
-    std::string gpu_arch = device_properties.environment().at("architecture");
-    if (HasEnhancedFP16ComputeSupport(gpu_arch)) num_gpus++;
+    bool support; 
+    auto status GpuDriver::GetFastFP16Support(support); 
+    if (support) num_gpus++; 
 #endif
   }
   return num_gpus;

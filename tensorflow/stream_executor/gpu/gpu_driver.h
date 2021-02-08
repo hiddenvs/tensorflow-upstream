@@ -473,6 +473,10 @@ class GpuDriver {
   // (supported on ROCm only)
   static port::Status GetGpuGCNArchName(GpuDeviceHandle device,
                                         std::string* gcnArchName);
+#if TENSORFLOW_USE_ROCM
+  // Tests Fast FP16 and AMP Support ROCm Only
+  static port::Status GetFastFP16Support(bool& support); 
+#endif
 
   // Returns the number of multiprocessors on the device (note that the device
   // may be multi-GPU-per-board).

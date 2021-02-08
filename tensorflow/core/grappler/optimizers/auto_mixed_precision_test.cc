@@ -94,6 +94,8 @@ void VerifyGraphsEquivalent(const GraphDef& original_graph,
 
 #if GOOGLE_CUDA
 const std::pair<int, int> kMinGPUArch = {7, 0};
+#elif TENSORFLOW_USE_ROCM
+const std::pair<int, int> kMinGPUArch = {0, 0}; 
 #endif
 
 class AutoMixedPrecisionTest : public GrapplerTest {
@@ -102,7 +104,7 @@ class AutoMixedPrecisionTest : public GrapplerTest {
     int num_gpus = GetNumAvailableGPUs();
     // If GPUs are available, require that they all satisfy the min arch.
     gpu_available_ = (num_gpus > 0);
-#if GOOGLE_CUDA 
+#if GOOGLE_CUDA || TENSORFLOW_USE_ROCM 
     gpu_available_ =
         gpu_available_ && (num_gpus == GetNumAvailableGPUs(kMinGPUArch));
 #endif
@@ -1040,19 +1042,6 @@ int GetCudaVersion(const Cluster& cluster) {
   return 0;
 }
 
-std::string GetMinDeviceGPUArch(const Cluster& cluster){
-    auto devices = cluster.GetDevices();
-    std::string arch; 
-    for (const auto& device: devices){
-        const DeviceProperties& device_properties = device.second; 
-        if (device_properties.type() != "GPU") return "0";
-        string arch_str = device_properties.environment().at("architecture");
-        if(!HasEnhancedFP16ComputeSupport(arch_str)) return "0";
-        arch = arch_str; 
-    }
-    return arch;
-}
-
 TEST_F(AutoMixedPrecisionTest, BatchMatMul) {
   tensorflow::Scope s = tensorflow::Scope::NewRootScope();
   Output input = ops::Const(s.WithOpName("input"), 1.f / 33, {64, 32, 32});
@@ -1075,7 +1064,9 @@ TEST_F(AutoMixedPrecisionTest, BatchMatMul) {
 #if GOOGLE_CUDA
   if (GetCudaVersion(*virtual_cluster_.get()) >= 9010) {
 #elif TENSORFLOW_USE_ROCM
-  if (HasEnhancedFP16ComputeSupport(GetMinDeviceGPUArch(*virtual_cluster_.get()))){
+  bool support; 
+  auto status GpuDriver::GetFastFP16Support(support); 
+  if (support){
 #else  
   if (true) {
 #endif

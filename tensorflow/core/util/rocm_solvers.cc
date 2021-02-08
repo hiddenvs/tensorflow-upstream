@@ -111,7 +111,7 @@ struct ROCmSolverHandles {
   ~ROCmSolverHandles() {
     CHECK(wrap::rocblas_destroy_handle(parent_, rocm_blas_handle) ==
           rocblas_status_success)
-        << "Failed to destroy cuBlas instance.";
+        << "Failed to destroy rocBlas instance.";
   }
   GpuExecutor* parent_;
   rocblas_handle rocm_blas_handle;
