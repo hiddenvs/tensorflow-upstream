@@ -35,7 +35,6 @@ limitations under the License.
 #include "tensorflow/core/grappler/utils/grappler_test.h"
 #include "tensorflow/core/lib/core/status_test_util.h"
 #include "tensorflow/core/lib/random/random.h"
-#include "tensorflow/stream_executor/gpu/gpu_driver.h"
 
 // TODO(benbarsdell): Improve the numerical checks in these tests. The tests
 // were originally written only to check the graph coloring, so the graphs do
