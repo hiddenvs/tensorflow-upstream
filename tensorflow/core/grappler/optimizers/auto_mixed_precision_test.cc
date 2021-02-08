@@ -21,7 +21,6 @@ limitations under the License.
 #include <utility>
 #include <vector>
 
-#include "tensorlfow/stream_executor/gpu/gpu_driver.h"
 #include "tensorflow/cc/ops/control_flow_ops_internal.h"
 #include "tensorflow/cc/ops/list_ops.h"
 #include "tensorflow/cc/ops/math_ops.h"
