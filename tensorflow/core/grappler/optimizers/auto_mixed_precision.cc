@@ -2006,7 +2006,10 @@ int GetNumGPUs(const Cluster& cluster,
       num_gpus++;
     }
 #elif TENSORFLOW_USE_ROCM
-    if (GetFastFP16Support()) num_gpus++; 
+    LOG(WARNING) << "GetFastFP16Support returns " << GetFastFP16Support();
+    if (GetFastFP16Support()){
+         num_gpus++; 
+    }
 #endif
   }
   return num_gpus;
