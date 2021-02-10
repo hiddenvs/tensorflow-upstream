@@ -52,7 +52,7 @@ namespace grappler {
 bool GetFastFP16Support()
 {
     bool supported = false;
-    std::array<std::string, 2> FP16SupportedDevices = {"gfx906, gfx908"};
+    std::array<std::string, 2> FP16SupportedDevices = {"gfx906", "gfx908"};
     hipDeviceProp_t props;
     int dev = 0;
     hipError_t result = hipGetDevice(&dev);
