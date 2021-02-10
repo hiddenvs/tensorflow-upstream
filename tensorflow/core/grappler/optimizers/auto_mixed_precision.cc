@@ -48,6 +48,7 @@ limitations under the License.
 namespace tensorflow {
 namespace grappler {
 
+#if TENSORFLOW_USE_ROCM
 bool GetFastFP16Support()
 {
     bool supported = false;
@@ -57,8 +58,10 @@ bool GetFastFP16Support()
     hipError_t result = hipGetDevice(&dev);
     result = hipGetDeviceProperties(&props, dev);
     std::string gcnArchName = props.gcnArchName;
+    LOG(WARNING) << "gcnArchName =" << gcnArchName;
 #if TF_ROCM_VERSION >= 4000
     std::string gpu_arch = absl::StrSplit(gcnArchName, ":")[0];
+    LOG(WARNING) << "gpu_arch =" << gpu_arch;
 #else
     std::string gpu_arch = gcnArchName;
 #endif
@@ -67,6 +70,7 @@ bool GetFastFP16Support()
                 != std::end(FP16SupportedDevices);
     return supported;
 }
+#endif
 
 namespace {
 
@@ -2006,7 +2010,6 @@ int GetNumGPUs(const Cluster& cluster,
       num_gpus++;
     }
 #elif TENSORFLOW_USE_ROCM
-    LOG(WARNING) << "GetFastFP16Support returns " << GetFastFP16Support();
     if (GetFastFP16Support()){
          num_gpus++; 
     }
