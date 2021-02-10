@@ -38,6 +38,7 @@ int GetNumAvailableGPUs(
                   "min_cuda_compute_capability";
     return 0;
   }
+  std::array<std::string, 2> FP16SupportedDevices = {"gfx906", "gfx908"}; 
 #endif
 #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
   if (ValidateGPUMachineManager().ok()) {
@@ -45,10 +46,10 @@ int GetNumAvailableGPUs(
     if (gpu_manager != nullptr) {
       int num_gpus = gpu_manager->VisibleDeviceCount();
       for (int i = 0; i < num_gpus; i++) {
-#if GOOGLE_CUDA
         auto desc_status = gpu_manager->DescriptionForDevice(i);
         if (desc_status.ok()) {
           auto desc = desc_status.ConsumeValueOrDie();
+#if GOOGLE_CUDA
           int cc_major = 0;
           int cc_minor = 0;
           desc->cuda_compute_capability(&cc_major, &cc_minor);
@@ -58,10 +59,13 @@ int GetNumAvailableGPUs(
               cuda_compute_capability >= min_cuda_compute_capability) {
             num_eligible_gpus++;
           }
-        }
-#else
-        num_eligible_gpus++;
+#else //TENSORFLOW_USE_ROCM
+          std::string gcn_arch_name = desc->rocm_amdgpu_gcn_arch_name(); 
+          if(std::find(std::begin(FP16SupportedDevices),
+             std::end(FP16SupportedDevices), gcn_arch_name)
+             != std::end(FP16SupportedDevices)) num_eligible_gpus++;
 #endif
+        }
       }
     }
   }
