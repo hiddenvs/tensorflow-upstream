@@ -115,7 +115,7 @@ class AutoMixedPrecisionTest : public GrapplerTest {
       device_properties.mutable_environment()->insert({"architecture", "7"});
       device_properties.mutable_environment()->insert({"cuda", "9010"});
 #elif TENSORFLOW_USE_ROCM
-      device_properties.mutable_environment()->insert({"architecture", "gfx906"});
+      device_properties.mutable_environment()->insert({"architecture", "gfx900"});
 #endif
       virtual_cluster_.reset(
           new VirtualCluster({{"/GPU:1", device_properties}}));
