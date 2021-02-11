@@ -249,9 +249,7 @@ distribute_py_test(
     disable_mlir_bridge = False,
     main = "custom_training_loop_metrics_test.py",
     tags = [
-        "no_rocm",  # Intermitently times out on ROCm
         "multi_and_single_gpu",
-        "no_rocm",
     ],
     deps = [
         ":strategy_combinations",
@@ -273,7 +271,6 @@ distribute_py_test(
     tags = [
         "multi_and_single_gpu",
         "no_cuda_asan",  # times out
-        "no_rocm",  # Intermitently times out on ROCm
         "notsan",  # TODO(b/170954243)
     ],
     tpu_tags = [
@@ -365,6 +362,7 @@ distribute_py_test(
 
 distribute_py_test(
     name = "distribute_strategy_test",
+    size = "large",
     srcs = ["distribute_strategy_test.py"],
     disable_mlir_bridge = True,  # TODO(b/170352626)
     full_precision = True,
@@ -373,7 +371,6 @@ distribute_py_test(
     shard_count = 20,
     tags = [
         "multi_and_single_gpu",
-        "no_rocm",  # times out on ROCm
         "no_windows_gpu",
         "noasan",  # TODO(b/170902997)
         "noguitar",  # TODO(b/172354344)
@@ -436,7 +433,7 @@ py_library(
 
 distribute_py_test(
     name = "keras_dnn_correctness_test",
-    size = "medium",
+    size = "large",
     srcs = ["keras_dnn_correctness_test.py"],
     disable_mlir_bridge = True,  # TODO(b/170352626)
     full_precision = True,
@@ -481,7 +478,7 @@ distribute_py_test(
 
 distribute_py_test(
     name = "keras_image_model_correctness_test",
-    size = "medium",
+    size = "large",
     srcs = ["keras_image_model_correctness_test.py"],
     disable_mlir_bridge = True,  # TODO(b/170352626)
     full_precision = True,
@@ -489,7 +486,6 @@ distribute_py_test(
     shard_count = 16,
     tags = [
         "multi_and_single_gpu",
-        "no_rocm",  # times out on ROCm
         "no_windows_gpu",
         "noasan",  # TODO(b/337374867) fails with -fsanitize=null
         "notsan",
@@ -539,7 +535,7 @@ distribute_py_test(
 
 distribute_py_test(
     name = "keras_rnn_model_correctness_test",
-    size = "medium",
+    size = "large",
     srcs = ["keras_rnn_model_correctness_test.py"],
     full_precision = True,
     main = "keras_rnn_model_correctness_test.py",
@@ -548,7 +544,6 @@ distribute_py_test(
     shard_count = 31,
     tags = [
         "multi_and_single_gpu",
-        "no_rocm",
         "no_windows_gpu",
         "noasan",  # TODO(b/337374867) fails with -fsanitize=null
         "notpu",  # TODO(b/153672562)
@@ -561,14 +556,13 @@ distribute_py_test(
 
 distribute_py_test(
     name = "keras_save_load_test",
-    size = "medium",
+    size = "large",
     srcs = ["keras_save_load_test.py"],
     full_precision = True,
     main = "keras_save_load_test.py",
     shard_count = 7,
     tags = [
         "multi_and_single_gpu",
-        "no_rocm", # Times out on ROCM
     ],
     xla_tags = [
         "no_cuda_asan",  # times out
@@ -608,7 +602,6 @@ distribute_py_test(
     tags = [
         "multi_and_single_gpu",
         "no_cuda_asan",  # times out
-        "no_rocm",
         "no_windows_gpu",
         "notsan",
     ],
