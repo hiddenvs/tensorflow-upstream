@@ -119,7 +119,7 @@ class AutoMixedPrecisionTest : public GrapplerTest {
 #endif
       virtual_cluster_.reset(
           new VirtualCluster({{"/GPU:1", device_properties}}));
-    }
+     }
     TF_CHECK_OK(virtual_cluster_->Provision());
   }
 
@@ -1024,6 +1024,16 @@ TEST_F(AutoMixedPrecisionTest, TensorListThroughFunction) {
   }
 }
 
+#if TENSORFLOW_USE_ROCM
+bool HasFP16Support(const Cluster& cluster) {
+  auto devices = cluster.GetDevices(); 
+  for (const auto& device : devices){
+    const DeviceProperties& device_properties = device.second;
+    if(!GetFastFP16Support(device_properties)) return false;
+  }
+  return true;
+}
+#endif 
 int GetCudaVersion(const Cluster& cluster) {
   auto devices = cluster.GetDevices();
   for (const auto& device : devices) {
@@ -1062,7 +1072,7 @@ TEST_F(AutoMixedPrecisionTest, BatchMatMul) {
 #if GOOGLE_CUDA
   if (GetCudaVersion(*virtual_cluster_.get()) >= 9010) {
 #elif TENSORFLOW_USE_ROCM
-  if (GetFastFP16Support()){
+  if (HasFP16Support(*virtual_cluster_.get())){
 #else  
   if (true) {
 #endif

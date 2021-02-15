@@ -49,15 +49,16 @@ namespace tensorflow {
 namespace grappler {
 
 #if TENSORFLOW_USE_ROCM
-bool GetFastFP16Support()
+bool GetFastFP16Support(const DeviceProperties &props)
 {
     bool supported = false;
     std::array<std::string, 2> FP16SupportedDevices = {"gfx906", "gfx908"};
-    hipDeviceProp_t props;
+/*    hipDeviceProp_t props;
     int dev = 0;
     hipError_t result = hipGetDevice(&dev);
     result = hipGetDeviceProperties(&props, dev);
-    std::string gcnArchName = props.gcnArchName;
+    std::string gcnArchName = props.gcnArchName;*/
+    std::string gcnArchName = props.environment().at("architecture");
     LOG(WARNING) << "gcnArchName =" << gcnArchName;
 #if TF_ROCM_VERSION >= 4000
     std::string gpu_arch = absl::StrSplit(gcnArchName, ":")[0];
@@ -1193,7 +1194,7 @@ bool AutoMixedPrecisionImpl::IsOnSuitableGPUArch(const NodeDef& node) const {
 #ifndef TENSORFLOW_USE_ROCM
   return GetDeviceGPUArch(virtual_placer_.get_device(node)) >= kMinGPUArch;
 #else
-  return GetFastFP16Support(); 
+  return GetFastFP16Support(virtual_placer_.get_device(node)); 
 #endif
 }
 
@@ -2010,7 +2011,7 @@ int GetNumGPUs(const Cluster& cluster,
       num_gpus++;
     }
 #elif TENSORFLOW_USE_ROCM
-    if (GetFastFP16Support()){
+    if (GetFastFP16Support(device_properties)){
          num_gpus++; 
     }
 #endif
