@@ -1029,9 +1029,11 @@ bool HasFP16Support(const Cluster& cluster) {
   auto devices = cluster.GetDevices(); 
   for (const auto& device : devices){
     const DeviceProperties& device_properties = device.second;
-    if(!GetFastFP16Support(device_properties)) return false;
+    if(device_properties.type() == "GPU"){
+      if(GetFastFP16Support(device_properties)) return true; 
+    }
   }
-  return true;
+  return false;
 }
 #endif 
 int GetCudaVersion(const Cluster& cluster) {
