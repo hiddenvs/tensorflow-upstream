@@ -104,6 +104,11 @@ class ReluTest(test.TestCase):
   def testNoElement(self):
     self._testRelu(np.array([[], []], dtype=np.float32))
 
+  @test_util.disable_xla("b/157978028: Does not yet pass with XLA")
+  def testNaNPropagation(self):
+    for t in [np.float16, np.float32, np.float64]:
+      self._testRelu(np.array([-1, np.nan, 1, np.nan]).astype(t))
+
   # The gradient test for ReLU is a bit tricky as the derivative is not well
   # defined at around zero and we want to avoid that in terms of input values.
   def testGradientFloat32(self):
@@ -234,6 +239,11 @@ class Relu6Test(test.TestCase):
       self._testRelu6(
           np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t))
 
+  @test_util.disable_xla("b/157978028: Does not yet pass with XLA")
+  def testNaNPropagation(self):
+    for t in [np.float16, np.float32, np.float64]:
+      self._testRelu6(np.array([-1, np.nan, 1, 7, np.nan]).astype(t))
+
   # The gradient test for ReLU6 is a bit tricky as the derivative is
   # not well defined at around zero and six and we want to avoid that
   # in terms of input values.
@@ -293,6 +303,11 @@ class LeakyReluTest(test.TestCase):
       self._testLeakyRelu(
           np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t),
           alpha=0.1)
+
+  def testNaNPropagation(self):
+    for t in [np.float16, np.float32, np.float64]:
+      self._testLeakyRelu(np.array([-1, np.nan, 1, np.nan]).astype(t),
+                          alpha=0.2)
 
   # The gradient test for Leaky ReLU is a bit tricky as the derivative is not
   # well defined at around zero and we want to avoid that in terms of input
@@ -411,6 +426,10 @@ class EluTest(test.TestCase):
     for t in [np.float16, np.float32, np.float64]:
       self._testElu(np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t))
 
+  def testNaNPropagation(self):
+    for t in [np.float16, np.float32, np.float64]:
+      self._testElu(np.array([-1, np.nan, 1, np.nan]).astype(t))
+
   def testGradientFloat32(self):
     with self.cached_session():
       x_val = [[-0.9, -0.7, -0.5, -0.3, -0.1], [0.1, 0.3, 0.5, 0.7, 0.9]]
@@ -490,7 +509,7 @@ class GeluTest(test.TestCase):
 
   def _testGelu(self, np_features):
     np_gelu = self._npGelu(np_features)
-    tf_gelu = nn_ops.gelu(np_features,approximate=True)
+    tf_gelu = nn_ops.gelu(np_features, approximate=True)
     self.assertAllCloseAccordingToType(np_gelu, tf_gelu)
     self.assertShapeEqual(np_gelu, tf_gelu)
 
@@ -513,8 +532,8 @@ class GeluTest(test.TestCase):
       for gpu in [True, False]:
         if gpu and not test.is_gpu_available():
           continue
-        delta = 2e-2 if t==np.float16 else 1e-3
-        tol = 2e-2 if t==np.float16 else (1e-4 if t==np.float32 else 1e-6)
+        delta = 2e-2 if t == np.float16 else 1e-3
+        tol = 2e-2 if t == np.float16 else (1e-4 if t == np.float32 else 1e-6)
         def approx_gelu(x):
           return nn_ops.gelu(x, approximate=True)
         with self.session(use_gpu=gpu):
@@ -523,8 +542,8 @@ class GeluTest(test.TestCase):
           e1, e2 = gradient_checker_v2.compute_gradient(approx_gelu,
                                                         [x], delta=delta)
           err = gradient_checker_v2.max_error(
-              e1,e2)
-          print(e1,e2)
+              e1, e2)
+          print(e1, e2)
           print("gelu", t, "GPU" if gpu else "CPU", "gradient err = ", err)
           self.assertLess(err, tol)
 

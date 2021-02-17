@@ -78,7 +78,8 @@ class BaseFFTOpsTest(test.TestCase):
 
   def _check_grad_complex(self, func, x, y, result_is_complex=True,
                           rtol=1e-2, atol=1e-2):
-    with self.cached_session(use_gpu=True):
+    with self.cached_session():
+
       def f(inx, iny):
         inx.set_shape(x.shape)
         iny.set_shape(y.shape)
@@ -114,12 +115,12 @@ class FFTOpsTest(BaseFFTOpsTest, parameterized.TestCase):
 
   def _tf_fft(self, x, rank, fft_length=None, feed_dict=None):
     # fft_length unused for complex FFTs.
-    with self.cached_session(use_gpu=True) as sess:
+    with self.cached_session() as sess:
       return sess.run(self._tf_fft_for_rank(rank)(x), feed_dict=feed_dict)
 
   def _tf_ifft(self, x, rank, fft_length=None, feed_dict=None):
     # fft_length unused for complex FFTs.
-    with self.cached_session(use_gpu=True) as sess:
+    with self.cached_session() as sess:
       return sess.run(self._tf_ifft_for_rank(rank)(x), feed_dict=feed_dict)
 
   def _np_fft(self, x, rank, fft_length=None):
@@ -287,8 +288,8 @@ class FFTOpsTest(BaseFFTOpsTest, parameterized.TestCase):
 class RFFTOpsTest(BaseFFTOpsTest, parameterized.TestCase):
 
   def _tf_fft(self, x, rank, fft_length=None, feed_dict=None):
-    with self.cached_session(use_gpu=True) as sess:
-      verify = context.executing_eagerly() 
+    with self.cached_session() as sess:
+      verify = context.executing_eagerly()
       if verify:
         # Make a copy of the tensor to ensure that the FFT library does not
         # corrupt it
@@ -302,7 +303,7 @@ class RFFTOpsTest(BaseFFTOpsTest, parameterized.TestCase):
       return rv
 
   def _tf_ifft(self, x, rank, fft_length=None, feed_dict=None):
-    with self.cached_session(use_gpu=True) as sess:
+    with self.cached_session() as sess:
       return sess.run(
           self._tf_ifft_for_rank(rank)(x, fft_length), feed_dict=feed_dict)
 
@@ -354,54 +355,54 @@ class RFFTOpsTest(BaseFFTOpsTest, parameterized.TestCase):
     if sh[0] & 1:
       return c2r
 
-    if nd==0:
-      nd=len(sh)
+    if nd == 0:
+      nd = len(sh)
     h = sh[-1]//2
-    if h<c2r.shape[-1]:
-      if len(sh)>1:
-        c2r[:,h]=0.0
+    if h < c2r.shape[-1]:
+      if len(sh) > 1:
+        c2r[:, h] = 0.0
       else:
-        c2r[h]=0.0
+        c2r[h] = 0.0
 
     # Ugly, but I don't see how to shorten this 
 
     # dim 0
     h = sh[0]//2
-    c2r[0]=np.real(c2r[0])
-    c2r[h]=np.real(c2r[h])
+    c2r[0] = np.real(c2r[0])
+    c2r[h] = np.real(c2r[h])
 
-    if len(sh)>=2:
+    if len(sh) >= 2:
       for x in range(1, h):
-        c2r[-x]=np.conj(c2r[x])
+        c2r[-x] = np.conj(c2r[x])
 
     # dim 1
-    if len(sh)>=2:
-      c2r[:,0]=np.real(c2r[:,0])
-      c2r[:,h]=np.real(c2r[:,h])
-    if len(sh)>=3:
+    if len(sh) >= 2:
+      c2r[:, 0] = np.real(c2r[:, 0])
+      c2r[:, h] = np.real(c2r[:, h])
+    if len(sh) >= 3:
       for x in range(1, h):
-        c2r[:,-x]=np.conj(c2r[:,x])
+        c2r[:, -x] = np.conj(c2r[:, x])
 
     # dim 2
-    if len(sh)>=3:
-      c2r[:,:,0]=np.real(c2r[:,:,0])
-      c2r[:,:,h]=np.real(c2r[:,:,h])
-    if len(sh)>=4:
+    if len(sh) >= 3:
+      c2r[:, :, 0] = np.real(c2r[:, :, 0])
+      c2r[:, :, h] = np.real(c2r[:, :, h])
+    if len(sh) >= 4:
       for x in range(1, h):
-        c2r[:,:,-x]=np.conj(c2r[:,:,x])
+        c2r[:, :, -x] = np.conj(c2r[:, :, x])
 
     # dim 3
-    if len(sh)>=4:
-      c2r[:,:,:,0]=np.real(c2r[:,:,:,0])
-      c2r[:,:,:,h]=np.real(c2r[:,:,:,h])
-    if len(sh)>=5:
+    if len(sh) >= 4:
+      c2r[:, :, :, 0] = np.real(c2r[:, :, :, 0])
+      c2r[:, :, :, h] = np.real(c2r[:, :, :, h])
+    if len(sh) >= 5:
       for x in range(1, h):
-        c2r[:,:,:,-x]=np.conj(c2r[:,:,:,x])
+        c2r[:, :, :, -x] = np.conj(c2r[:, :, :, x])
 
     # dim 4
-    if len(sh)>=5:
-      c2r[:,:,:,:,0]=np.real(c2r[:,:,:,:,0])
-      c2r[:,:,:,:,h]=np.real(c2r[:,:,:,:,h])
+    if len(sh) >= 5:
+      c2r[:, :, :, :, 0] = np.real(c2r[:, :, :, :, 0])
+      c2r[:, :, :, :, h] = np.real(c2r[:, :, :, :, h])
     return c2r
 
   @parameterized.parameters(itertools.product(
@@ -478,7 +479,7 @@ class RFFTOpsTest(BaseFFTOpsTest, parameterized.TestCase):
       VALID_FFT_RANKS, range(3), (5, 6), (np.float32, np.float64)))
   def test_fft_lenth_truncate(self, rank, extra_dims, size, np_rtype):
     """Test truncation (FFT size < dimensions)."""
-    if test.is_built_with_rocm() and (rank==2 or rank==3):
+    if test.is_built_with_rocm() and (rank == 2 or rank == 3):
       return
     np_ctype = np.complex64 if np_rtype == np.float32 else np.complex128
     tol = 1e-4 if np_rtype == np.float32 else 8e-5
@@ -512,7 +513,7 @@ class RFFTOpsTest(BaseFFTOpsTest, parameterized.TestCase):
       VALID_FFT_RANKS, range(3), (5, 6), (np.float32, np.float64)))
   def test_fft_lenth_pad(self, rank, extra_dims, size, np_rtype):
     """Test padding (FFT size > dimensions)."""
-    if test.is_built_with_rocm() and size==6:
+    if test.is_built_with_rocm() and size == 6:
       return
     np_ctype = np.complex64 if np_rtype == np.float32 else np.complex128
     tol = 1e-4 if np_rtype == np.float32 else 8e-5
@@ -527,7 +528,7 @@ class RFFTOpsTest(BaseFFTOpsTest, parameterized.TestCase):
     self._compare_forward(r2c.astype(np_rtype), rank, fft_length,
                           rtol=tol, atol=tol)
     self._compare_backward(c2r.astype(np_ctype), rank, fft_length,
-                          rtol=tol, atol=tol)
+                           rtol=tol, atol=tol)
     # Confirm it works with unknown shapes as well.
     if not context.executing_eagerly():
       self._compare_forward(

@@ -1085,7 +1085,7 @@ class ProgbarLogger(Callback):
     if self.verbose == 1:
       # Only block async when verbose = 1.
       logs = tf_utils.to_numpy_or_python_type(logs)
-      items=list(logs.items())
+      items = list(logs.items())
       items.sort()
       self.progbar.update(self.seen, items, finalize=False)
 
@@ -1628,9 +1628,6 @@ class BackupAndRestore(Callback):
     # Only the chief worker writes model checkpoints, but all workers
     # restore checkpoint at on_train_begin().
     self._chief_worker_only = False
-
-  def set_model(self, model):
-    self.model = model
 
   def on_train_begin(self, logs=None):
     # TrainingState is used to manage the training state needed for
