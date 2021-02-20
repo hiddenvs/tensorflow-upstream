@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/kernels/eigen_backward_spatial_convolutions.h"
 #include "tensorflow/core/kernels/eigen_spatial_convolutions.h"
+#include "tensorflow/core/util/env_var.h"
 #include "tensorflow/core/util/tensor_format.h"
 
 namespace tensorflow {
@@ -419,6 +420,18 @@ class ConvAlgorithmMap;
 
 template <>
 class ConvAlgorithmMap<Eigen::ThreadPoolDevice> {};
+
+template <typename T>
+bool TestMIOpenBFloat16Support() {
+  static bool kTestMIOpenBFloat16Support = [] {
+    bool use_bfloat16 = false;
+    TF_CHECK_OK(ReadBoolFromEnvVar("TF_ROCM_USE_BFLOAT16_FOR_CONV", false,
+                                   &use_bfloat16));
+    return use_bfloat16;
+  }();
+
+  return kTestMIOpenBFloat16Support && (DataTypeToEnum<T>::value == DT_FLOAT);
+}
 
 }  // namespace tensorflow
 
