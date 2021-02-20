@@ -399,6 +399,19 @@ struct ReverseTransformFilter {
                   typename TTypes<T, NDIMS>::Tensor out);
 };
 
+template <typename Device, typename T, int NDIMS>
+struct ConvertToBFloat16 {
+  void operator()(const Device& d, typename TTypes<T, NDIMS>::ConstTensor in,
+                  typename TTypes<bfloat16, NDIMS>::Tensor out);
+};
+
+template <typename Device, typename T, int NDIMS>
+struct ConvertFromBFloat16 {
+  void operator()(const Device& d,
+                  typename TTypes<bfloat16, NDIMS>::ConstTensor in,
+                  typename TTypes<T, NDIMS>::Tensor out);
+};
+
 }  // namespace functor
 
 template <class T>
@@ -406,6 +419,7 @@ class ConvAlgorithmMap;
 
 template <>
 class ConvAlgorithmMap<Eigen::ThreadPoolDevice> {};
+
 }  // namespace tensorflow
 
 #endif  // TENSORFLOW_CORE_KERNELS_CONV_2D_H_
